@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { sidecarDown } from "@/lib/tf-proxy";
 import { sidecarFetch } from "@/lib/twinflow";
 
 export const dynamic = "force-dynamic";
@@ -9,9 +10,6 @@ export async function GET() {
     const data = await upstream.json();
     return NextResponse.json(data, { status: upstream.status });
   } catch {
-    return NextResponse.json(
-      { error: "TwinFlow sidecar unreachable. Is it running on TWINFLOW_URL?" },
-      { status: 502 },
-    );
+    return sidecarDown();
   }
 }

@@ -37,13 +37,20 @@ func run() error {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	openCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	openCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 	pg, err := primary.Open(openCtx, cfg)
 	if err != nil {
 		return err
 	}
 	defer pg.Close()
+
+	if cfg.SeedSQL != "" {
+		if err := pg.ApplySeedFile(openCtx, cfg.SeedSQL); err != nil {
+			return fmt.Errorf("apply seed sql: %w", err)
+		}
+		log.Info("applied seed sql", "path", cfg.SeedSQL)
+	}
 
 	mir, err := mirror.Open(cfg.Mirror.Path)
 	if err != nil {

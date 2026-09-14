@@ -40,8 +40,12 @@ export default function DemoPage() {
             </p>
           </div>
           <p className="mt-6 max-w-2xl text-sm text-muted-foreground">
-            Sur l&apos;hébergement public, le sidecar n&apos;est pas démarré.
-            Lancez la stack en local pour exercer cette démo.
+            Le café interactif parle au sidecar TwinFlow. S&apos;il n&apos;est
+            pas joignable, le{" "}
+            <Link href="/#demo" className="text-foreground underline-offset-4 hover:underline">
+              film et le simulateur
+            </Link>{" "}
+            restent disponibles sur l&apos;accueil.
           </p>
         </div>
       </section>

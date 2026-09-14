@@ -16,6 +16,7 @@ RUN apk add --no-cache ca-certificates wget \
     && chown twinflow:twinflow /var/lib/twinflow
 COPY --from=build /out/twinflow /usr/local/bin/twinflow
 COPY configs/twinflow.yaml /etc/twinflow/twinflow.yaml
+COPY examples/init.sql /etc/twinflow/init.sql
 USER twinflow
 WORKDIR /var/lib/twinflow
 ENV TWINFLOW_CONFIG=/etc/twinflow/twinflow.yaml
