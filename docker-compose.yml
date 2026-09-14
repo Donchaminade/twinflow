@@ -1,4 +1,4 @@
-# TwinFlow v1 local stack: central Postgres + sidecar + hello-TwinFlow demo.
+# TwinFlow v1 local stack: central Postgres + sidecar + landing/café demo.
 # Usage: cp .env.example .env && docker compose up --build
 services:
   postgres:

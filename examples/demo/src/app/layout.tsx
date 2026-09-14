@@ -5,7 +5,7 @@ import { SiteFooter, SiteHeader } from "@/components/site-header";
 import "./globals.css";
 
 const serif = Fraunces({
-  variable: "--font-heading",
+  variable: "--font-serif",
   subsets: ["latin"],
 });
 
@@ -20,9 +20,19 @@ const mono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TwinFlow — database sidecar",
+  title: {
+    default: "TwinFlow — sidecar de régulation Postgres",
+    template: "%s — TwinFlow",
+  },
   description:
-    "Language-agnostic sidecar that rate-limits writes to your central database and serves non-critical reads from a local mirror synced in about a second.",
+    "Sidecar agnostique qui régule le trafic et sert un miroir local (~1 s) pour que les pics ne tuent pas Postgres. Lectures au miroir ; tables fresh et writes au primary.",
+  openGraph: {
+    title: "TwinFlow — sidecar de régulation Postgres",
+    description:
+      "Régule le trafic, sert un miroir local, laisse Postgres comme source de vérité.",
+    locale: "fr_TG",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -31,12 +41,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="fr">
       <body
         className={`${serif.variable} ${sans.variable} ${mono.variable} flex min-h-screen flex-col antialiased`}
       >
+        <a
+          href="#contenu"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-50 focus:rounded-md focus:bg-primary focus:px-3 focus:py-2 focus:text-primary-foreground"
+        >
+          Aller au contenu
+        </a>
         <SiteHeader />
-        <div className="flex-1">{children}</div>
+        <div id="contenu" className="flex-1">
+          {children}
+        </div>
         <SiteFooter />
         <CookieBanner />
       </body>
