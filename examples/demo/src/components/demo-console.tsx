@@ -11,7 +11,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type { TwinFlowResponse, TwinFlowStatus } from "@/lib/twinflow";
+import { SidecarOfflinePanel } from "@/components/sidecar-offline";
+import {
+  formatTwinFlowError,
+  isSidecarUnreachable,
+  TwinFlowRequestError,
+  type TwinFlowResponse,
+  type TwinFlowStatus,
+} from "@/lib/twinflow";
 
 type Product = { id: number; name: string; category: string; price_cents: number };
 type Stock = { product_id: number; quantity: number };
@@ -25,24 +32,37 @@ type LastHop = {
 };
 
 async function readJSON<T>(res: Response): Promise<T> {
-  const data = (await res.json()) as T & { error?: string };
+  const data = (await res.json()) as T & { error?: string; code?: string };
   if (!res.ok) {
-    throw new Error(data.error || `request failed (${res.status})`);
+    throw new TwinFlowRequestError(formatTwinFlowError(data, res.status), {
+      code: data.code,
+      status: res.status,
+    });
   }
   return data;
 }
 
 function money(cents: number) {
-  return `$${(cents / 100).toFixed(2)}`;
+  return `${(cents / 100).toFixed(2)}\u00a0$`;
 }
 
 function SourceBadge({ source }: { source: string }) {
   const mirror = source === "mirror";
   return (
     <Badge variant={mirror ? "secondary" : "default"}>
-      {mirror ? "mirror ~1s" : "central DB"}
+      {mirror ? "miroir ~1s" : "base centrale"}
     </Badge>
   );
+}
+
+function catchMessage(err: unknown, fallback: string) {
+  if (err instanceof TwinFlowRequestError) {
+    return err.message;
+  }
+  if (err instanceof Error && err.message && !/TWINFLOW_[A-Z0-9_]+/.test(err.message)) {
+    return err.message;
+  }
+  return fallback;
 }
 
 export function DemoConsole() {
@@ -54,6 +74,7 @@ export function DemoConsole() {
   const [stockHop, setStockHop] = useState<LastHop | null>(null);
   const [writeHop, setWriteHop] = useState<LastHop | null>(null);
   const [loading, setLoading] = useState(true);
+  const [offline, setOffline] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [spike, setSpike] = useState<string | null>(null);
@@ -82,7 +103,7 @@ export function DemoConsole() {
       })),
     );
     setProductHop({
-          label: "Lecture catalogue (exemple)",
+      label: "Lecture catalogue (exemple)",
       source: res.source,
       reason: res.reason,
       duration_ms: res.duration_ms,
@@ -106,7 +127,7 @@ export function DemoConsole() {
       })),
     );
     setStockHop({
-          label: "Lecture stock (fresh, exemple)",
+      label: "Lecture stock (fresh, exemple)",
       source: res.source,
       reason: res.reason,
       duration_ms: res.duration_ms,
@@ -137,8 +158,14 @@ export function DemoConsole() {
     setLoading(true);
     try {
       await Promise.all([refreshStatus(), loadCatalog(), loadStock(), loadOrders()]);
+      setOffline(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "failed to reach TwinFlow");
+      if (isSidecarUnreachable(err)) {
+        setOffline(true);
+        setError(null);
+      } else {
+        setError(catchMessage(err, "Impossible de joindre TwinFlow."));
+      }
     } finally {
       setLoading(false);
     }
@@ -146,11 +173,19 @@ export function DemoConsole() {
 
   useEffect(() => {
     void reload();
+  }, [reload]);
+
+  useEffect(() => {
+    if (offline) return;
     const id = window.setInterval(() => {
-      void refreshStatus().catch(() => undefined);
+      void refreshStatus().catch((err) => {
+        if (isSidecarUnreachable(err)) {
+          setOffline(true);
+        }
+      });
     }, 2000);
     return () => window.clearInterval(id);
-  }, [reload, refreshStatus]);
+  }, [offline, refreshStatus]);
 
   async function placeOrder(product: Product) {
     setBusy(true);
@@ -167,7 +202,7 @@ export function DemoConsole() {
         }),
       );
       setWriteHop({
-        label: `Write: order ${product.name}`,
+        label: `Écriture : commande ${product.name}`,
         source: write.source,
         reason: write.reason,
         duration_ms: write.duration_ms,
@@ -183,11 +218,16 @@ export function DemoConsole() {
         }),
       );
       if (dec.rows_affected === 0) {
-        setError(`No stock left for ${product.name}.`);
+        setError(`Plus de stock pour ${product.name}.`);
       }
       await Promise.all([loadStock(), loadOrders(), refreshStatus()]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "write failed");
+      if (isSidecarUnreachable(err)) {
+        setOffline(true);
+        setError(null);
+      } else {
+        setError(catchMessage(err, "L’écriture a échoué."));
+      }
     } finally {
       setBusy(false);
     }
@@ -216,7 +256,12 @@ export function DemoConsole() {
       );
       await refreshStatus();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "spike failed");
+      if (isSidecarUnreachable(err)) {
+        setOffline(true);
+        setError(null);
+      } else {
+        setError(catchMessage(err, "La simulation de pic a échoué."));
+      }
     } finally {
       setBusy(false);
     }
@@ -224,44 +269,51 @@ export function DemoConsole() {
 
   const qty = (id: number) => stock.find((s) => s.product_id === id)?.quantity ?? 0;
 
+  if (offline && !status) {
+    return (
+      <SidecarOfflinePanel onRetry={() => void reload()} busy={loading || busy} />
+    );
+  }
+
   return (
     <div className="space-y-6">
+      {offline ? (
+        <SidecarOfflinePanel onRetry={() => void reload()} busy={loading || busy} />
+      ) : null}
+
       {error ? (
         <Alert variant="destructive">
-          <AlertTitle>Sidecar or primary unavailable</AlertTitle>
-          <AlertDescription>
-            {error} Start the stack with <code>docker compose up</code> or run
-            TwinFlow locally against Postgres.
-          </AlertDescription>
+          <AlertTitle>La démo n’a pas pu terminer cette action</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
         </Alert>
       ) : null}
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Stat
           label="Primary"
-          value={status?.primary_ok ? "up" : loading ? "…" : "down"}
-          hint="source of truth"
+          value={status?.primary_ok ? "en ligne" : loading ? "…" : "hors ligne"}
+          hint="source de vérité"
         />
         <Stat
-          label="Mirror"
-          value={status?.mirror_ready ? "ready" : loading ? "…" : "degraded"}
-          hint={`lag ${status ? `${status.mirror_lag_ms}ms` : "—"}`}
+          label="Miroir"
+          value={status?.mirror_ready ? "prêt" : loading ? "…" : "dégradé"}
+          hint={`lag ${status ? `${status.mirror_lag_ms} ms` : "—"}`}
         />
         <Stat
-          label="Write queue"
+          label="File d’écriture"
           value={
             status
               ? `${status.regulator.queue_depth}/${status.regulator.queue_limit}`
               : "…"
           }
-          hint={`${status?.regulator.writes_completed ?? 0} writes completed`}
+          hint={`${status?.regulator.writes_completed ?? 0} écritures terminées`}
         />
         <Stat
           label="Pool"
           value={
             status ? `${status.pool.acquired}/${status.pool.max_conns}` : "…"
           }
-          hint={`${status?.regulator.rate_limit_rps ?? "—"} rps cap`}
+          hint={`plafond ${status?.regulator.rate_limit_rps ?? "—"} req/s`}
         />
       </div>
 
@@ -269,7 +321,7 @@ export function DemoConsole() {
         <Button onClick={() => void reload()} variant="outline" disabled={busy}>
           Actualiser
         </Button>
-        <Button onClick={() => void runSpike()} disabled={busy || !!error}>
+        <Button onClick={() => void runSpike()} disabled={busy || offline}>
           Simuler un pic catalogue
         </Button>
         {spike ? <p className="text-sm text-muted-foreground">{spike}</p> : null}
@@ -287,10 +339,13 @@ export function DemoConsole() {
           </CardHeader>
           <CardContent>
             {loading ? (
-              <p className="text-sm text-muted-foreground">Loading catalog…</p>
+              <p className="text-sm text-muted-foreground">
+                Chargement du catalogue…
+              </p>
             ) : products.length === 0 ? (
               <p className="text-sm text-muted-foreground">
-                No products yet. Seed Postgres with <code>examples/init.sql</code>.
+                Aucun produit pour l’instant. En local, le schéma d’exemple se
+                charge avec l’initialisation Postgres de la stack.
               </p>
             ) : (
               <ul className="divide-y">
@@ -307,10 +362,10 @@ export function DemoConsole() {
                     </div>
                     <Button
                       size="sm"
-                      disabled={busy || qty(p.id) <= 0}
+                      disabled={busy || offline || qty(p.id) <= 0}
                       onClick={() => void placeOrder(p)}
                     >
-                      Order
+                      Commander
                     </Button>
                   </li>
                 ))}
@@ -366,7 +421,7 @@ export function DemoConsole() {
                     <li key={o.id} className="flex justify-between">
                       <span>#{o.id}</span>
                       <span className="text-muted-foreground">
-                        product {o.product_id} × {o.quantity}
+                        produit {o.product_id} × {o.quantity}
                       </span>
                     </li>
                   ))}
@@ -392,9 +447,9 @@ export function DemoConsole() {
               <thead>
                 <tr className="border-b text-muted-foreground">
                   <th className="py-2 pr-4 font-medium">Table</th>
-                  <th className="py-2 pr-4 font-medium">Reads</th>
+                  <th className="py-2 pr-4 font-medium">Lectures</th>
                   <th className="py-2 pr-4 font-medium">Fresh</th>
-                  <th className="py-2 pr-4 font-medium">Mirror rows</th>
+                  <th className="py-2 pr-4 font-medium">Lignes miroir</th>
                 </tr>
               </thead>
               <tbody>
@@ -402,7 +457,7 @@ export function DemoConsole() {
                   <tr key={t.name} className="border-b last:border-0">
                     <td className="py-2 pr-4 font-mono">{t.name}</td>
                     <td className="py-2 pr-4">{t.reads}</td>
-                    <td className="py-2 pr-4">{t.fresh ? "yes" : "no"}</td>
+                    <td className="py-2 pr-4">{t.fresh ? "oui" : "non"}</td>
                     <td className="py-2 pr-4">{t.mirror_rows}</td>
                   </tr>
                 ))}

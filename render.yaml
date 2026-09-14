@@ -1,0 +1,63 @@
+# TwinFlow demo stack: managed Postgres + Go sidecar.
+# Apply from the Render Dashboard after this file is on the tracked branch:
+#   https://dashboard.render.com/blueprint/new?repo=https://github.com/Donchaminade/twinflow
+#
+# No real secrets belong here. Render generates TWINFLOW_API_TOKEN at provision time.
+# Copy that value into Vercel (same project as the landing site) together with
+# TWINFLOW_URL = the sidecar's public https://…onrender.com URL.
+#
+# Free web services spin down after inactivity. Free Postgres expires after 30 days.
+# This Blueprint does not select paid upgrades.
+
+previews:
+  generation: off
+
+databases:
+  - name: twinflow-demo-pg
+    databaseName: cafe
+    user: twinflow
+    plan: free
+    region: oregon
+    postgresMajorVersion: "16"
+
+services:
+  - type: web
+    name: twinflow-sidecar
+    runtime: go
+    plan: free
+    region: oregon
+    autoDeployTrigger: commit
+    healthCheckPath: /health
+    buildCommand: go build -trimpath -ldflags="-s -w" -o bin/twinflow ./cmd/twinflow
+    startCommand: ./bin/twinflow -config configs/twinflow.yaml
+    buildFilter:
+      paths:
+        - cmd/**
+        - internal/**
+        - configs/**
+        - examples/init.sql
+        - go.mod
+        - go.sum
+    envVars:
+      - key: TWINFLOW_PRIMARY_URL
+        fromDatabase:
+          name: twinflow-demo-pg
+          property: connectionString
+      - key: TWINFLOW_API_TOKEN
+        generateValue: true
+      - key: TWINFLOW_SEED_SQL
+        value: examples/init.sql
+      - key: TWINFLOW_MIRROR_PATH
+        value: /tmp/twinflow-mirror.db
+      - key: TWINFLOW_TLS_MODE
+        value: prefer
+      - key: TWINFLOW_LOG_LEVEL
+        value: info
+      - key: TWINFLOW_CORS_ORIGINS
+        value: https://twinflow-eosin.vercel.app,http://127.0.0.1:43123,http://localhost:43123,http://127.0.0.1:3000,http://localhost:3000
+      - key: TWINFLOW_RATE_LIMIT_RPS
+        value: "50"
+      - key: TWINFLOW_MAX_CONNS
+        value: "8"
+      - key: TWINFLOW_CONFIG
+        value: configs/twinflow.yaml

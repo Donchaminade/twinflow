@@ -704,6 +704,72 @@
   margin-left: auto;
 }
 
+.sidecar-offline {
+  border: 1px solid oklch(0.34 0.02 240);
+  border-radius: 1.25rem;
+  background:
+    radial-gradient(circle at 12% 0%, oklch(0.8 0.11 72 / 0.08), transparent 42%),
+    oklch(0.17 0.022 240 / 0.88);
+  padding: 1.6rem 1.4rem 1.5rem;
+}
+
+.sidecar-offline-options {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 1.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+.sidecar-offline-card {
+  border: 1px solid oklch(0.32 0.02 240);
+  border-radius: 1rem;
+  background: oklch(0.15 0.02 240 / 0.7);
+  padding: 1.1rem 1.15rem 1.2rem;
+}
+
+.sidecar-offline-kicker {
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: oklch(0.8 0.11 72);
+}
+
+.sidecar-offline-card h3 {
+  margin-top: 0.45rem;
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+}
+
+.sidecar-offline-card p {
+  margin-top: 0.45rem;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--muted-foreground);
+}
+
+.sidecar-offline-code {
+  margin-top: 0.85rem;
+  overflow-x: auto;
+  border-radius: 0.7rem;
+  border: 1px solid oklch(0.32 0.02 240);
+  background: oklch(0.12 0.02 240);
+  padding: 0.7rem 0.85rem;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.86rem;
+}
+
+@media (min-width: 900px) {
+  .sidecar-offline {
+    padding: 2rem 2.1rem 1.8rem;
+  }
+
+  .sidecar-offline-options {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

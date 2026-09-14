@@ -32,15 +32,17 @@ const (
 
 // Config is the sidecar runtime configuration.
 type Config struct {
-	Listen   string           `yaml:"listen"`
-	LogLevel string           `yaml:"log_level"`
-	APIToken string           `yaml:"-"`
-	CORS     []string         `yaml:"cors_origins"`
-	Primary  PrimaryConfig    `yaml:"primary"`
-	Mirror   MirrorConfig     `yaml:"mirror"`
+	Listen   string `yaml:"listen"`
+	LogLevel string `yaml:"log_level"`
+	APIToken string `yaml:"-"`
+	// SeedSQL is an optional path to idempotent SQL applied on boot (demo schema).
+	SeedSQL   string          `yaml:"-"`
+	CORS      []string        `yaml:"cors_origins"`
+	Primary   PrimaryConfig   `yaml:"primary"`
+	Mirror    MirrorConfig    `yaml:"mirror"`
 	Regulator RegulatorConfig `yaml:"regulator"`
-	Security SecurityConfig   `yaml:"security"`
-	Tables   []TableConfig    `yaml:"tables"`
+	Security  SecurityConfig  `yaml:"security"`
+	Tables    []TableConfig   `yaml:"tables"`
 }
 
 type PrimaryConfig struct {
@@ -53,12 +55,12 @@ type PrimaryConfig struct {
 }
 
 type MirrorConfig struct {
-	Path            string        `yaml:"path"`
-	SyncInterval    time.Duration `yaml:"sync_interval"`
-	MaxLag          time.Duration `yaml:"max_lag"`
-	ReconcileEvery  time.Duration `yaml:"reconcile_interval"`
-	BatchSize       int           `yaml:"batch_size"`
-	Driver          string        `yaml:"driver"` // sqlite (v1)
+	Path           string        `yaml:"path"`
+	SyncInterval   time.Duration `yaml:"sync_interval"`
+	MaxLag         time.Duration `yaml:"max_lag"`
+	ReconcileEvery time.Duration `yaml:"reconcile_interval"`
+	BatchSize      int           `yaml:"batch_size"`
+	Driver         string        `yaml:"driver"` // sqlite (v1)
 }
 
 type RegulatorConfig struct {
@@ -142,6 +144,16 @@ func applyEnv(cfg *Config) {
 	cfg.APIToken = strings.TrimSpace(os.Getenv("TWINFLOW_API_TOKEN"))
 	if v := os.Getenv("TWINFLOW_LISTEN"); v != "" {
 		cfg.Listen = v
+	} else if v := os.Getenv("PORT"); v != "" {
+		// Render and other PaaS inject PORT. Bind all interfaces.
+		if strings.Contains(v, ":") {
+			cfg.Listen = v
+		} else {
+			cfg.Listen = "0.0.0.0:" + v
+		}
+	}
+	if v := os.Getenv("TWINFLOW_SEED_SQL"); v != "" {
+		cfg.SeedSQL = v
 	}
 	if v := os.Getenv("TWINFLOW_LOG_LEVEL"); v != "" {
 		cfg.LogLevel = v

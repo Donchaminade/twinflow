@@ -22,6 +22,21 @@ Routes : `/`, `/demo`, `/architecture`, `/privacy`, `/terms`. Le bandeau
 cookies mémorise une seule préférence essentielle. Aucun tracker n'est
 embarqué.
 
+Sur Vercel, `/demo` proxifie le sidecar via les routes serveur. Sans sidecar
+joignable, la page explique le café d’exemple en français et propose le film,
+`docker compose up`, et — une fois publié — un lien de démo hébergée.
+
+Variables côté projet Vercel **twinflow** (après un Blueprint Render) :
+
+| Variable | Rôle |
+|---|---|
+| `TWINFLOW_URL` | Origine HTTPS publique du sidecar (sans slash final) |
+| `TWINFLOW_API_TOKEN` | Même jeton que Render si le sidecar en exige un |
+| `NEXT_PUBLIC_HOSTED_DEMO_URL` | Optionnel : CTA « démo hébergée » distincte |
+
+Détail : [docs/hosting-render.md](../../docs/hosting-render.md). Blueprint :
+[`render.yaml`](../../render.yaml).
+
 La simulation produit (`public/demo/twinflow.mp4`) se régénère avec :
 
 ```bash

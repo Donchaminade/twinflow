@@ -93,6 +93,8 @@ YAML (`configs/twinflow.yaml`) plus environment overrides. **Credentials never g
 | `TWINFLOW_MAX_CONNS` | Pool size | `8` |
 | `TWINFLOW_FRESH_TABLES` | Comma-separated override | `stock` |
 | `TWINFLOW_CORS_ORIGINS` | Allowed browser origins | demo ports |
+| `TWINFLOW_SEED_SQL` | Optional idempotent SQL file applied on boot | unset |
+| `PORT` | Listen port if `TWINFLOW_LISTEN` is unset (Render) | — |
 
 Tables in YAML:
 
@@ -140,6 +142,13 @@ Responses include `source` (`mirror` \| `primary`) and `reason` so you can asser
 
 Read [SECURITY.md](SECURITY.md) before exposing the sidecar.
 
+## Public demo hosting
+
+The Vercel site (`examples/demo`) can proxy a hosted sidecar. Apply
+[`render.yaml`](render.yaml) in the Render Dashboard, then set `TWINFLOW_URL`
+(and `TWINFLOW_API_TOKEN` if Render generated one) on the Vercel project.
+Step-by-step: [docs/hosting-render.md](docs/hosting-render.md).
+
 ## Repository map
 
 ```
@@ -156,9 +165,11 @@ configs/twinflow.yaml
 examples/init.sql      café example seed (not the product domain)
 examples/demo/         Next.js landing + illustrative café `/demo` + legal pages
 docs/architecture.md
+docs/hosting-render.md public sidecar + Postgres on Render; Vercel TWINFLOW_URL
 docs/marketing/tiktok-script.md  script TikTok 9:16 (FR)
 Dockerfile             sidecar image
 docker-compose.yml     Postgres + sidecar + demo
+render.yaml            Render Blueprint (free Postgres + Go sidecar)
 ```
 
 ## Tests

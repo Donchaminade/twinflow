@@ -31,6 +31,7 @@ tables:
 	}
 	t.Setenv("TWINFLOW_PRIMARY_URL", "postgres://u:p@localhost:5432/db")
 	t.Setenv("TWINFLOW_LISTEN", ":8741")
+	t.Setenv("TWINFLOW_SEED_SQL", "examples/init.sql")
 	t.Setenv("TWINFLOW_RATE_LIMIT_RPS", "42")
 	t.Setenv("TWINFLOW_FRESH_TABLES", "products")
 	t.Setenv("TWINFLOW_SYNC_INTERVAL", "2s")
@@ -52,6 +53,35 @@ tables:
 	}
 	if cfg.APIToken != "" {
 		t.Fatal("token must not come from yaml")
+	}
+	if cfg.SeedSQL != "examples/init.sql" {
+		t.Fatalf("seed=%s", cfg.SeedSQL)
+	}
+}
+
+func TestListenFallsBackToPORT(t *testing.T) {
+	t.Setenv("TWINFLOW_PRIMARY_URL", "postgres://u:p@localhost:5432/db")
+	t.Setenv("TWINFLOW_LISTEN", "")
+	t.Setenv("PORT", "10000")
+	cfg, err := Load("")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.Listen != "0.0.0.0:10000" {
+		t.Fatalf("listen=%s", cfg.Listen)
+	}
+}
+
+func TestListenPrefersTWINFLOW_LISTENOverPORT(t *testing.T) {
+	t.Setenv("TWINFLOW_PRIMARY_URL", "postgres://u:p@localhost:5432/db")
+	t.Setenv("TWINFLOW_LISTEN", "127.0.0.1:8741")
+	t.Setenv("PORT", "10000")
+	cfg, err := Load("")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.Listen != "127.0.0.1:8741" {
+		t.Fatalf("listen=%s", cfg.Listen)
 	}
 }
 
