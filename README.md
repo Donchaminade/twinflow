@@ -156,6 +156,7 @@ configs/twinflow.yaml
 examples/init.sql      café example seed (not the product domain)
 examples/demo/         Next.js landing + illustrative café `/demo` + legal pages
 docs/architecture.md
+docs/marketing/tiktok-script.md  script TikTok 9:16 (FR)
 Dockerfile             sidecar image
 docker-compose.yml     Postgres + sidecar + demo
 ```
