@@ -22,7 +22,7 @@ any app ──HTTP SQL API──► TwinFlow ──pgx pool──► PostgreSQL 
 Prerequisites: Docker and Docker Compose.
 
 ```bash
-git clone <this-repo> twinflow
+git clone https://github.com/Donchaminade/twinflow.git
 cd twinflow
 cp .env.example .env
 docker compose up --build
