@@ -18,9 +18,10 @@ export default function TermsPage() {
         </p>
         <h2 className="font-heading text-2xl">Cette démo</h2>
         <p>
-          Le café sur <code className="code-inline">/demo</code> est une
-          démonstration locale. Ce n&apos;est pas un système de paiement, de
-          stock ou de commande en production. N&apos;y saisissez pas de données
+          La démo café sur <code className="code-inline">/demo</code> est un
+          scénario illustratif — TwinFlow n&apos;est pas un logiciel de
+          restauration. Ce n&apos;est pas un système de paiement, de stock ou
+          de commande en production. N&apos;y saisissez pas de données
           personnelles ou bancaires réelles.
         </p>
         <h2 className="font-heading text-2xl">Vos responsabilités</h2>

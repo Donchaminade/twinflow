@@ -82,7 +82,7 @@ export function DemoConsole() {
       })),
     );
     setProductHop({
-      label: "Catalog read",
+          label: "Lecture catalogue (exemple)",
       source: res.source,
       reason: res.reason,
       duration_ms: res.duration_ms,
@@ -106,7 +106,7 @@ export function DemoConsole() {
       })),
     );
     setStockHop({
-      label: "Stock read (fresh)",
+          label: "Lecture stock (fresh, exemple)",
       source: res.source,
       reason: res.reason,
       duration_ms: res.duration_ms,
@@ -212,7 +212,7 @@ export function DemoConsole() {
       );
       const mirrors = hops.filter((h) => h.source === "mirror").length;
       setSpike(
-        `${hops.length} catalog reads in ${Math.round(performance.now() - started)}ms — ${mirrors} served from the local mirror, ${hops.length - mirrors} fell back to primary.`,
+        `${hops.length} lectures catalogue (exemple) en ${Math.round(performance.now() - started)} ms — ${mirrors} servies depuis le miroir, ${hops.length - mirrors} basculées au primary.`,
       );
       await refreshStatus();
     } catch (err) {
@@ -267,10 +267,10 @@ export function DemoConsole() {
 
       <div className="flex flex-wrap items-center gap-2">
         <Button onClick={() => void reload()} variant="outline" disabled={busy}>
-          Refresh
+          Actualiser
         </Button>
         <Button onClick={() => void runSpike()} disabled={busy || !!error}>
-          Simulate catalog spike
+          Simuler un pic catalogue
         </Button>
         {spike ? <p className="text-sm text-muted-foreground">{spike}</p> : null}
       </div>
@@ -278,10 +278,11 @@ export function DemoConsole() {
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Café catalog</CardTitle>
+            <CardTitle>Catalogue (exemple café)</CardTitle>
             <CardDescription>
-              Non-critical read — TwinFlow should serve this from the SQLite
-              mirror. Place an order to write through the regulator to Postgres.
+              Lecture non critique — TwinFlow doit servir ceci depuis le miroir
+              SQLite. Passer commande écrit via le régulateur vers Postgres.
+              Ceci n&apos;est qu&apos;un schéma illustratif.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -321,15 +322,15 @@ export function DemoConsole() {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Routing inspector</CardTitle>
-              <CardDescription>
-                Every response tells you where it ran and why.
-              </CardDescription>
+            <CardTitle>Inspecteur de routage</CardTitle>
+            <CardDescription>
+                Chaque réponse indique où elle a tourné, et pourquoi.
+            </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {[productHop, stockHop, writeHop].filter(Boolean).length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  Run a read or write to see the hop.
+                  Lancez une lecture ou une écriture pour voir le hop.
                 </p>
               ) : (
                 [productHop, stockHop, writeHop].filter(Boolean).map((hop) => (
@@ -349,15 +350,15 @@ export function DemoConsole() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Recent orders</CardTitle>
-              <CardDescription>
-                Written to Postgres, then pushed to the mirror.
-              </CardDescription>
+            <CardTitle>Commandes récentes</CardTitle>
+            <CardDescription>
+                Écrites sur Postgres, puis poussées au miroir.
+            </CardDescription>
             </CardHeader>
             <CardContent>
               {orders.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  No orders yet. That is the empty state, not an error.
+                  Aucune commande. C’est l’état vide, pas une erreur.
                 </p>
               ) : (
                 <ul className="space-y-2 text-sm">
@@ -379,10 +380,11 @@ export function DemoConsole() {
       {status ? (
         <Card>
           <CardHeader>
-            <CardTitle>Configured tables</CardTitle>
+            <CardTitle>Tables configurées</CardTitle>
             <CardDescription>
-              <code>fresh: true</code> always reads the central DB. Everyone else
-              prefers the mirror until lag or downtime forces a fallback.
+              <code>fresh: true</code> lit toujours la base centrale. Les
+              autres préfèrent le miroir jusqu&apos;à un lag ou une panne.
+              Liste de config — pas un métier figé.
             </CardDescription>
           </CardHeader>
           <CardContent className="overflow-x-auto">

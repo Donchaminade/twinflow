@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <title>TwinFlow — simulation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560;9..144,640&family=Source+Sans+3:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --ink: #10141c;
+        --slate: #171d28;
+        --line: #2a3240;
+        --paper: #efe6d4;
+        --mute: #9aa6b5;
+        --copper: #e2b15a;
+        --teal: #6ec4c0;
+        --amber: #d9a15a;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: var(--ink);
+        color: var(--paper);
+        font-family: "Source Sans 3", sans-serif;
+      }
+      #stage {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        background:
+          radial-gradient(circle at 16% 8%, rgba(226, 177, 90, 0.18), transparent 36%),
+          radial-gradient(circle at 82% 0%, rgba(110, 196, 192, 0.14), transparent 34%),
+          var(--ink);
+      }
+      #stage::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(226, 177, 90, 0.05) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(226, 177, 90, 0.05) 1px, transparent 1px);
+        background-size: 72px 72px;
+        mask-image: radial-gradient(ellipse at 28% 0%, black 18%, transparent 68%);
+        pointer-events: none;
+      }
+      header {
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 48px 72px 0;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-family: Fraunces, serif;
+        font-size: 28px;
+      }
+      .mark {
+        width: 14px;
+        height: 14px;
+        border-radius: 99px;
+        background: radial-gradient(circle at 30% 30%, #f3d48a, #c9842c);
+        box-shadow: 0 0 0 5px rgba(226, 177, 90, 0.16);
+      }
+      .kicker {
+        margin-top: 10px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        font-size: 13px;
+        color: var(--copper);
+      }
+      .schema {
+        margin-top: 6px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 15px;
+        color: var(--mute);
+      }
+      .badges { display: flex; gap: 10px; }
+      .badge {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 7px 14px;
+        font-size: 13px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+      .badge.on { border-color: rgba(110, 196, 192, 0.5); color: var(--teal); }
+      .badge.warn { border-color: rgba(226, 177, 90, 0.55); color: var(--copper); }
+      .title-block { padding: 36px 72px 0; }
+      h1 {
+        font-family: Fraunces, serif;
+        font-size: 56px;
+        letter-spacing: -0.03em;
+        line-height: 1.05;
+      }
+      .caption {
+        margin-top: 12px;
+        max-width: 820px;
+        font-size: 22px;
+        line-height: 1.45;
+        color: var(--mute);
+      }
+      .gauges {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 22px;
+        padding: 36px 72px 0;
+      }
+      .gauge {
+        background: rgba(23, 29, 40, 0.72);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        padding: 22px 24px;
+      }
+      .gauge-meta {
+        display: flex;
+        justify-content: space-between;
+        color: var(--mute);
+        font-size: 15px;
+      }
+      .gauge-meta b {
+        font-family: "IBM Plex Mono", monospace;
+        font-weight: 500;
+        color: var(--paper);
+      }
+      .track {
+        margin-top: 14px;
+        height: 8px;
+        border-radius: 99px;
+        background: #222833;
+        overflow: hidden;
+      }
+      .fill { height: 100%; border-radius: inherit; }
+      .copper { background: var(--copper); }
+      .teal { background: var(--teal); }
+      .amber { background: var(--amber); }
+      .flow {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 34px 72px 0;
+      }
+      .node {
+        min-width: 210px;
+        border: 1px solid var(--line);
+        background: var(--slate);
+        border-radius: 18px;
+        padding: 18px 20px;
+      }
+      .node strong {
+        display: block;
+        font-family: Fraunces, serif;
+        font-size: 24px;
+      }
+      .node span { display: block; margin-top: 6px; color: var(--mute); font-size: 14px; }
+      .node.tf { border-color: rgba(226, 177, 90, 0.55); background: rgba(88, 62, 22, 0.28); }
+      .node.mi { border-color: rgba(110, 196, 192, 0.5); background: rgba(20, 62, 62, 0.35); }
+      .node.pg { border-color: rgba(217, 161, 90, 0.5); background: rgba(72, 48, 18, 0.32); }
+      .node.dim { opacity: 0.42; }
+      .arrow { color: var(--copper); font-size: 28px; }
+      .split { display: grid; gap: 10px; }
+      .bottom {
+        display: grid;
+        grid-template-columns: 1.35fr 1fr;
+        gap: 22px;
+        padding: 28px 72px 0;
+      }
+      .panel {
+        border: 1px solid var(--line);
+        background: rgba(23, 29, 40, 0.78);
+        border-radius: 18px;
+        padding: 16px 20px;
+        min-height: 196px;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 9px 0;
+        border-bottom: 1px solid #222833;
+        font-size: 16px;
+      }
+      .row:last-child { border-bottom: 0; }
+      .row code {
+        font-family: "IBM Plex Mono", monospace;
+        color: var(--paper);
+        flex: 1;
+      }
+      .pill {
+        border-radius: 999px;
+        padding: 3px 10px;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .pill.mirror { background: rgba(110, 196, 192, 0.16); color: var(--teal); }
+      .pill.primary { background: rgba(226, 177, 90, 0.16); color: var(--copper); }
+      .why { color: var(--mute); font-size: 14px; }
+      footer {
+        position: absolute;
+        right: 72px;
+        bottom: 40px;
+        left: 72px;
+        display: flex;
+        justify-content: space-between;
+        color: var(--mute);
+        font-size: 15px;
+        letter-spacing: 0.04em;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="stage">
+      <header>
+        <div>
+          <div class="brand"><span class="mark"></span> TwinFlow</div>
+          <p class="kicker">Sidecar agnostique · schéma générique</p>
+          <p class="schema">accounts · ledger_entries · sessions</p>
+        </div>
+        <div class="badges">
+          <span id="sync" class="badge on">sync ~1 s</span>
+          <span id="status" class="badge on">miroir prêt</span>
+        </div>
+      </header>
+      <div class="title-block">
+        <h1 id="title">Trafic nominal</h1>
+        <p id="caption" class="caption">Lectures non critiques → miroir.</p>
+      </div>
+      <div class="gauges">
+        <div class="gauge">
+          <div class="gauge-meta"><span>Pic de trafic</span><b id="g1v">18%</b></div>
+          <div class="track"><div id="g1" class="fill copper" style="width:18%"></div></div>
+        </div>
+        <div class="gauge">
+          <div class="gauge-meta"><span>File d’écriture</span><b id="g2v">2/32</b></div>
+          <div class="track"><div id="g2" class="fill amber" style="width:6%"></div></div>
+        </div>
+        <div class="gauge">
+          <div class="gauge-meta"><span>Rate-limit primary</span><b id="g3v">8/50 rps</b></div>
+          <div class="track"><div id="g3" class="fill teal" style="width:16%"></div></div>
+        </div>
+      </div>
+      <div class="flow">
+        <div class="node"><strong>App</strong><span>HTTP JSON · n’importe quel langage</span></div>
+        <div class="arrow">→</div>
+        <div class="node tf"><strong>TwinFlow</strong><span>routeur + régulateur</span></div>
+        <div class="arrow">→</div>
+        <div class="split">
+          <div id="mirrorNode" class="node mi"><strong>Miroir</strong><span id="lag">SQLite · lag 240 ms</span></div>
+          <div class="node pg"><strong>Primary</strong><span>PostgreSQL · source de vérité</span></div>
+        </div>
+      </div>
+      <div class="bottom">
+        <div class="panel" id="hops"></div>
+        <div class="panel" id="tables"></div>
+      </div>
+      <footer>
+        <span>Pas un métier — une config. Writes toujours au primary.</span>
+        <span id="clock">00s / 32s</span>
+      </footer>
+    </div>
+    <script>
+      const D = 32;
+      function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
+      function lerp(a, b, x) { return a + (b - a) * clamp(x, 0, 1); }
+      function phaseOf(t) {
+        if (t < 4) return { title: "Trafic nominal", caption: "Lectures non critiques → miroir. Tables fresh et writes → primary." };
+        if (t < 10) return { title: "Pic de lectures", caption: "Le pic tape le miroir. Postgres n’ouvre pas une session par requête." };
+        if (t < 16) return { title: "Writes en file", caption: "Le régulateur borne le débit. File pleine : 429, pas un nouveau pool." };
+        if (t < 21) return { title: "Sync incrémentale", caption: "Le miroir rattrape les tables configurées — environ une seconde." };
+        if (t < 24) return { title: "Miroir en retard", caption: "Le lag approche le seuil. TwinFlow se prépare à basculer." };
+        if (t < 28) return { title: "Basculer vers le primary", caption: "Lag au-delà du seuil : les lectures rejoignent Postgres le temps du rattrapage." };
+        return { title: "Retour au miroir", caption: "Le miroir est à jour. Les lectures non-fresh y reviennent." };
+      }
+      function hopsFor(t, failover) {
+        const m = failover ? "primary" : "mirror";
+        const mr = failover ? "failover · lag > seuil" : "lecture · miroir";
+        if (t < 4) return [
+          ["SELECT id, email FROM accounts", m, mr],
+          ["SELECT token FROM sessions", m, mr],
+          ["SELECT amount FROM ledger_entries", "primary", "fresh: true"],
+        ];
+        if (t < 10) return [
+          ["SELECT * FROM accounts WHERE active", m, "pic · miroir"],
+          ["SELECT * FROM sessions LIMIT 50", m, mr],
+          ["SELECT id FROM accounts", m, mr],
+          ["SELECT * FROM ledger_entries", "primary", "fresh: true"],
+        ];
+        if (t < 16) return [
+          ["INSERT INTO ledger_entries …", "primary", "write · toujours primary"],
+          ["UPDATE accounts SET …", "primary", "write · file du régulateur"],
+          ["SELECT id FROM accounts", m, mr],
+        ];
+        if (t < 21) return [
+          ["sync accounts, sessions, ledger_entries", "mirror", "tick incrémental ~1 s"],
+          ["SELECT email FROM accounts", m, mr],
+        ];
+        if (t < 28) return [
+          ["SELECT id FROM accounts", "primary", "failover · lag > seuil"],
+          ["SELECT token FROM sessions", "primary", "failover · miroir en retard"],
+          ["SELECT amount FROM ledger_entries", "primary", "fresh: true"],
+        ];
+        return [
+          ["SELECT id, email FROM accounts", "mirror", "lecture · miroir"],
+          ["SELECT token FROM sessions", "mirror", "lecture · miroir"],
+          ["SELECT amount FROM ledger_entries", "primary", "fresh: true"],
+        ];
+      }
+      function metrics(t) {
+        let traffic = 0.18, rps = 8, queue = 2, lag = 240, failover = false;
+        if (t < 4) {
+          const x = t / 4;
+          traffic = lerp(0.12, 0.22, x); rps = lerp(6, 11, x); lag = lerp(180, 320, x);
+        } else if (t < 10) {
+          const x = (t - 4) / 6;
+          traffic = lerp(0.22, 0.94, x); rps = lerp(11, 46, x); queue = lerp(2, 8, x); lag = lerp(320, 780, x);
+        } else if (t < 16) {
+          const x = (t - 10) / 6;
+          traffic = lerp(0.94, 0.72, x); rps = lerp(46, 50, x); queue = lerp(8, 29, x); lag = lerp(780, 1100, x);
+        } else if (t < 21) {
+          const x = (t - 16) / 5;
+          traffic = lerp(0.72, 0.48, x); rps = lerp(50, 28, x); queue = lerp(29, 14, x); lag = lerp(1100, 980, x);
+        } else if (t < 24) {
+          const x = (t - 21) / 3;
+          traffic = lerp(0.48, 0.55, x); rps = lerp(28, 24, x); queue = lerp(14, 10, x); lag = lerp(980, 3400, x);
+        } else if (t < 28) {
+          const x = (t - 24) / 4;
+          failover = true;
+          traffic = lerp(0.55, 0.4, x); rps = lerp(24, 18, x); queue = lerp(10, 6, x); lag = lerp(3400, 4100, x);
+        } else {
+          const x = (t - 28) / 4;
+          traffic = lerp(0.4, 0.16, x); rps = lerp(18, 8, x); queue = lerp(6, 2, x); lag = lerp(1800, 220, x);
+        }
+        return {
+          traffic, rps: Math.round(rps), queue: Math.round(queue),
+          lag: Math.round(lag), failover
+        };
+      }
+      function rows(list) {
+        return list.map(([sql, dest, why]) =>
+          `<div class="row"><code>${sql}</code><span class="pill ${dest}">${dest === "mirror" ? "miroir" : "primary"}</span><span class="why">${why}</span></div>`
+        ).join("");
+      }
+      window.renderAt = function renderAt(tRaw) {
+        const t = ((tRaw % D) + D) % D;
+        const p = phaseOf(t);
+        const m = metrics(t);
+        document.getElementById("title").textContent = p.title;
+        document.getElementById("caption").textContent = p.caption;
+        document.getElementById("g1").style.width = Math.round(m.traffic * 100) + "%";
+        document.getElementById("g1v").textContent = Math.round(m.traffic * 100) + "%";
+        document.getElementById("g2").style.width = Math.round((m.queue / 32) * 100) + "%";
+        document.getElementById("g2v").textContent = m.queue + "/32";
+        document.getElementById("g3").style.width = Math.round((m.rps / 50) * 100) + "%";
+        document.getElementById("g3v").textContent = m.rps + "/50 rps";
+        document.getElementById("lag").textContent = "SQLite · lag " + m.lag + " ms";
+        document.getElementById("mirrorNode").classList.toggle("dim", m.failover);
+        const sync = document.getElementById("sync");
+        const status = document.getElementById("status");
+        sync.className = "badge " + (m.failover ? "warn" : "on");
+        status.className = "badge " + (m.failover ? "warn" : "on");
+        status.textContent = m.failover ? "failover" : "miroir prêt";
+        document.getElementById("hops").innerHTML = rows(hopsFor(t, m.failover));
+        const dest = (fresh) => (fresh || m.failover) ? "primary" : "mirror";
+        document.getElementById("tables").innerHTML = rows([
+          ["accounts", dest(false), "sync"],
+          ["ledger_entries", "primary", "fresh"],
+          ["sessions", dest(false), "sync"],
+        ]);
+        document.getElementById("clock").textContent =
+          String(Math.floor(t)).padStart(2, "0") + "s / 32s";
+      };
+      window.renderAt(0);
+    </script>
+  </body>
+</html>

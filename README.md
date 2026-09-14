@@ -30,9 +30,9 @@ docker compose up --build
 
 - Sidecar API: [http://127.0.0.1:8741/health](http://127.0.0.1:8741/health)
 - Landing: [http://127.0.0.1:43123](http://127.0.0.1:43123)
-- Café demo: [http://127.0.0.1:43123/demo](http://127.0.0.1:43123/demo)
+- Café demo (illustrative example app, not TwinFlow’s domain): [http://127.0.0.1:43123/demo](http://127.0.0.1:43123/demo)
 
-The demo catalog is a **mirror read**. Stock is a **fresh** table (always primary). Placing an order is a **write** to Postgres, then an immediate push to the mirror. The inspector on the page shows `source` and `reason` for each hop.
+The café is only a **sample schema**. The demo catalog is a **mirror read**. Stock is a **fresh** table (always primary). Placing an order is a **write** to Postgres, then an immediate push to the mirror. The inspector on the page shows `source` and `reason` for each hop. TwinFlow itself is schema-agnostic.
 
 Without Docker, run Postgres yourself, export `TWINFLOW_PRIMARY_URL`, then:
 
@@ -153,9 +153,10 @@ internal/mirror/       SQLite + incremental sync
 internal/engine/       orchestration
 internal/api/          HTTP + headers
 configs/twinflow.yaml
-examples/init.sql      café seed
-examples/demo/         Next.js landing + café `/demo` + legal pages
+examples/init.sql      café example seed (not the product domain)
+examples/demo/         Next.js landing + illustrative café `/demo` + legal pages
 docs/architecture.md
+docs/marketing/tiktok-script.md  script TikTok 9:16 (FR)
 Dockerfile             sidecar image
 docker-compose.yml     Postgres + sidecar + demo
 ```
