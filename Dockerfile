@@ -9,7 +9,7 @@ COPY internal ./internal
 COPY configs ./configs
 RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/twinflow ./cmd/twinflow
 
-FROM alpine:3.20
+FROM alpine:3.24
 RUN apk add --no-cache ca-certificates wget \
     && adduser -D -H -u 10001 twinflow \
     && mkdir -p /var/lib/twinflow \
