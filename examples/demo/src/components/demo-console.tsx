@@ -330,7 +330,7 @@ export function DemoConsole() {
             <CardContent className="space-y-3">
               {[productHop, stockHop, writeHop].filter(Boolean).length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  Run a read or write to see the hop.
+                  Lancez une lecture ou une écriture pour voir le hop.
                 </p>
               ) : (
                 [productHop, stockHop, writeHop].filter(Boolean).map((hop) => (
@@ -358,7 +358,7 @@ export function DemoConsole() {
             <CardContent>
               {orders.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  No orders yet. That is the empty state, not an error.
+                  Aucune commande. C’est l’état vide, pas une erreur.
                 </p>
               ) : (
                 <ul className="space-y-2 text-sm">
