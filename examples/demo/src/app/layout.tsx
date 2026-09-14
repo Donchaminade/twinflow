@@ -52,7 +52,7 @@ export default function RootLayout({
           Aller au contenu
         </a>
         <SiteHeader />
-        <div id="contenu" className="flex-1">
+        <div id="contenu" tabIndex={-1} className="flex-1">
           {children}
         </div>
         <SiteFooter />

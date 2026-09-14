@@ -307,7 +307,7 @@
 }
 
 .demo-queue {
-  transform-origin: 262px 313px;
+  transform-origin: left center;
   transform-box: fill-box;
   fill: oklch(0.8 0.11 72);
   animation: queue-fill 8s ease-in-out infinite;

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { LANDING_DEMO_VIDEO } from "@/lib/site";
 import { Reveal } from "@/components/reveal";
 
@@ -56,9 +57,18 @@ export function LandingDemoStage() {
 }
 
 function LoadDemoAnimation() {
+  const svgRef = useRef<SVGSVGElement>(null);
+
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) svg.pauseAnimations();
+  }, []);
+
   return (
     <div className="demo-stage" role="img" aria-label="Animation : un pic de lectures va au miroir, les écritures passent par le régulateur vers Postgres.">
-      <svg viewBox="0 0 960 540" className="h-auto w-full" aria-hidden>
+      <svg ref={svgRef} viewBox="0 0 960 540" className="h-auto w-full" aria-hidden>
         <defs>
           <linearGradient id="tfGlow" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor="oklch(0.78 0.11 72)" stopOpacity="0.35" />
