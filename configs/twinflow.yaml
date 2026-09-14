@@ -1,0 +1,52 @@
+# TwinFlow sidecar configuration.
+# Credentials NEVER live here — set TWINFLOW_PRIMARY_URL and optional
+# TWINFLOW_API_TOKEN in the environment (see .env.example).
+
+listen: ":8741"
+log_level: info
+cors_origins:
+  - "http://127.0.0.1:43123"
+  - "http://localhost:43123"
+
+primary:
+  max_conns: 8
+  min_conns: 1
+  # disable | prefer | require — applied only if the URL has no sslmode=
+  tls_mode: prefer
+
+mirror:
+  path: data/mirror.db
+  sync_interval: 1s
+  max_lag: 3s
+  reconcile_interval: 30s
+  batch_size: 500
+  driver: sqlite
+
+regulator:
+  rate_limit_rps: 50
+  burst: 100
+  write_queue_size: 512
+  write_timeout: 8s
+  read_timeout: 3s
+
+security:
+  require_token: false
+
+# fresh: true  → every read hits the central DB (balances, stock, payments…)
+# fresh: false → reads go to the local mirror (~1s) unless the mirror is lagging
+tables:
+  - name: products
+    fresh: false
+    sync: true
+    watermark: updated_at
+    pk: id
+  - name: stock
+    fresh: true
+    sync: true
+    watermark: updated_at
+    pk: product_id
+  - name: orders
+    fresh: false
+    sync: true
+    watermark: updated_at
+    pk: id

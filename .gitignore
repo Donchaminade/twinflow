@@ -1,0 +1,37 @@
+# Binaries
+/bin/
+/twinflow
+*.exe
+*.test
+*.out
+coverage.out
+coverage.html
+
+# Local data
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+/data/
+
+# Secrets — never commit real env files
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Node / Next.js demo
+node_modules/
+.next/
+out/
+.turbo/
+*.tsbuildinfo
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Test leftovers
+/tmp/

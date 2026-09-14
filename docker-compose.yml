@@ -1,0 +1,70 @@
+# TwinFlow v1 local stack: central Postgres + sidecar + hello-TwinFlow demo.
+# Usage: cp .env.example .env && docker compose up --build
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: twinflow
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-twinflow-local}
+      POSTGRES_DB: cafe
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./examples/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U twinflow -d cafe"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  twinflow:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      TWINFLOW_PRIMARY_URL: postgres://twinflow:${POSTGRES_PASSWORD:-twinflow-local}@postgres:5432/cafe
+      TWINFLOW_TLS_MODE: disable
+      TWINFLOW_LISTEN: 0.0.0.0:8741
+      TWINFLOW_MIRROR_PATH: /var/lib/twinflow/mirror.db
+      TWINFLOW_CONFIG: /etc/twinflow/twinflow.yaml
+      TWINFLOW_API_TOKEN: ${TWINFLOW_API_TOKEN:-}
+      TWINFLOW_CORS_ORIGINS: http://127.0.0.1:43123,http://localhost:43123
+      TWINFLOW_LOG_LEVEL: info
+      TWINFLOW_RATE_LIMIT_RPS: ${TWINFLOW_RATE_LIMIT_RPS:-50}
+      TWINFLOW_MAX_CONNS: ${TWINFLOW_MAX_CONNS:-8}
+    ports:
+      - "8741:8741"
+    volumes:
+      - mirrordata:/var/lib/twinflow
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8741/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  demo:
+    build:
+      context: ./examples/demo
+      dockerfile: Dockerfile
+    depends_on:
+      twinflow:
+        condition: service_healthy
+    environment:
+      TWINFLOW_URL: http://twinflow:8741
+      TWINFLOW_API_TOKEN: ${TWINFLOW_API_TOKEN:-}
+      PORT: 43123
+      HOSTNAME: 0.0.0.0
+      NEXT_TELEMETRY_DISABLED: "1"
+    ports:
+      - "43123:43123"
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  mirrordata:

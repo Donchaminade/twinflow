@@ -1,0 +1,59 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  GOTOOLCHAIN: local
+
+jobs:
+  sidecar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+      - name: Vet
+        run: go vet ./cmd/... ./internal/...
+      - name: Test
+        run: go test ./cmd/... ./internal/... -count=1
+      - name: Build
+        run: go build -o /tmp/twinflow ./cmd/twinflow
+
+  demo:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: examples/demo
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: examples/demo/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+      - name: Go vulnerability check
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          govulncheck ./cmd/... ./internal/...
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: npm audit (demo)
+        working-directory: examples/demo
+        run: npm audit --audit-level=high
+        continue-on-error: true

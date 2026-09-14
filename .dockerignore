@@ -1,0 +1,11 @@
+.git
+.github
+bin
+data
+*.db
+.env
+node_modules
+examples/demo/node_modules
+examples/demo/.next
+**/coverage
+README.md
