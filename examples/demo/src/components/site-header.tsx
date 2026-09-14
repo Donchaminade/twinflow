@@ -6,11 +6,11 @@ import { CookieSettingsButton } from "@/components/cookie-settings-button";
 import { GITHUB_URL } from "@/lib/site";
 
 const nav = [
-  { href: "/#demo", label: "Démo" },
-  { href: "/#workflow", label: "Flux" },
+  { href: "/#demo", label: "Simulation" },
+  { href: "/#schema", label: "Votre schéma" },
   { href: "/#quickstart", label: "5 min" },
   { href: "/#features", label: "Fonctions" },
-  { href: "/demo", label: "Café" },
+  { href: "/demo", label: "Démo café" },
 ];
 
 export function SiteHeader() {
@@ -123,8 +123,9 @@ export function SiteFooter() {
             TwinFlow
           </p>
           <p>
-            Sidecar MIT. Postgres reste la source de vérité. Secrets uniquement
-            via l&apos;environnement — jamais dans le dépôt.
+            Sidecar MIT, indépendant du métier. Postgres reste la source de
+            vérité. Secrets uniquement via l&apos;environnement — jamais dans
+            le dépôt.
           </p>
         </div>
         <div className="flex flex-wrap gap-x-5 gap-y-2">
@@ -138,7 +139,7 @@ export function SiteFooter() {
             Architecture
           </Link>
           <Link href="/demo" className="hover:text-foreground">
-            Café
+            Démo café
           </Link>
           <CookieSettingsButton className="hover:text-foreground" />
           <a href={GITHUB_URL} className="hover:text-foreground">

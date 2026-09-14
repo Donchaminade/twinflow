@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     template: "%s — TwinFlow",
   },
   description:
-    "Sidecar agnostique qui régule le trafic et sert un miroir local (~1 s) pour que les pics ne tuent pas Postgres. Lectures au miroir ; tables fresh et writes au primary.",
+    "Sidecar agnostique, indépendant du métier : régule le trafic Postgres et sert un miroir local (~1 s). N’importe quel schéma, n’importe quel langage. Lectures au miroir ; tables fresh et writes au primary.",
   openGraph: {
     title: "TwinFlow — sidecar de régulation Postgres",
     description:

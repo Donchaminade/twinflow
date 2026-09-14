@@ -26,6 +26,7 @@ node_modules/
 out/
 .turbo/
 *.tsbuildinfo
+scripts/demo-video/frames/
 
 # OS / IDE
 .DS_Store

@@ -26,9 +26,10 @@ export default function PrivacyPage() {
             C&apos;est le seul cookie.
           </li>
           <li>
-            Les commandes du café sur <code className="code-inline">/demo</code>
-            , uniquement dans le Postgres Docker que vous lancez. Ces données
-            ne quittent pas votre machine.
+            Les commandes de la démo café (scénario illustratif) sur{" "}
+            <code className="code-inline">/demo</code>, uniquement dans le
+            Postgres Docker que vous lancez. Ces données ne quittent pas votre
+            machine.
           </li>
         </ul>
         <h2 className="font-heading text-2xl">Ce que nous ne faisons pas</h2>

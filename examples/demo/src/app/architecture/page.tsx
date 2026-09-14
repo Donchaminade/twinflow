@@ -8,7 +8,8 @@ export default function ArchitecturePage() {
       <h1 className="font-heading text-4xl tracking-tight">Architecture</h1>
       <p className="mt-4 text-muted-foreground">
         TwinFlow v1 est un processus Go : API SQL HTTP, régulateur, routeur,
-        pool PostgreSQL, miroir SQLite embarqué.
+        pool PostgreSQL, miroir SQLite embarqué. Il n&apos;est lié à aucun
+        métier — n&apos;importe quel schéma Postgres se déclare en config.
       </p>
       <pre className="mt-8 overflow-x-auto rounded-xl bg-[oklch(0.1_0.02_240)] p-4 text-xs leading-6 text-foreground/90">
 {`app (n'importe quel langage)

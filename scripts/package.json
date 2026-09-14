@@ -1,0 +1,8 @@
+{
+  "name": "twinflow-scripts",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "puppeteer-core": "^24.15.0"
+  }
+}
