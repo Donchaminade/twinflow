@@ -29,7 +29,8 @@ docker compose up --build
 ```
 
 - Sidecar API: [http://127.0.0.1:8741/health](http://127.0.0.1:8741/health)
-- Café demo: [http://127.0.0.1:43123](http://127.0.0.1:43123)
+- Landing: [http://127.0.0.1:43123](http://127.0.0.1:43123)
+- Café demo: [http://127.0.0.1:43123/demo](http://127.0.0.1:43123/demo)
 
 The demo catalog is a **mirror read**. Stock is a **fresh** table (always primary). Placing an order is a **write** to Postgres, then an immediate push to the mirror. The inspector on the page shows `source` and `reason` for each hop.
 
@@ -153,7 +154,7 @@ internal/engine/       orchestration
 internal/api/          HTTP + headers
 configs/twinflow.yaml
 examples/init.sql      café seed
-examples/demo/         Next.js hello-TwinFlow + legal pages
+examples/demo/         Next.js landing + café `/demo` + legal pages
 docs/architecture.md
 Dockerfile             sidecar image
 docker-compose.yml     Postgres + sidecar + demo
